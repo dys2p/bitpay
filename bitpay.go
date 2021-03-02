@@ -20,6 +20,7 @@ type Client struct {
 	Key string
 }
 
+// MakeClient reads an API key from a file. If the file doesn't exist, a key is generated and written to it.
 func MakeClient(api string, keyPath string) (*Client, error) {
 
 	// check if key file exists
