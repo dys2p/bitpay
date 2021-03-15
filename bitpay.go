@@ -114,8 +114,8 @@ func (invoice *Invoice) Expiration() time.Time {
 }
 
 type CryptoInfo struct {
-	CryptoCode string // like "BTC" or "XMR"
-	Paid       string // float64 won't work, server returns a string
+	CryptoCode string  // like "BTC" or "XMR"
+	Paid       float64 `json:",string"`
 	Payments   []Payment
 	Rate       float64 // from the time of invoice generation
 }
