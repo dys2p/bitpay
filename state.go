@@ -5,11 +5,11 @@ type InvoiceState string
 
 const (
 	New         InvoiceState = "new"
-	Paid                     = "paid" // "amount paid is equal to or greater than the amount expected", but not confirmed yet
-	Confirmed                = "confirmed"
-	Complete                 = "complete"
-	Expired                  = "expired"
-	Invalid                  = "invalid"
-	PaidPartial              = "paidPartial"
-	PaidOver                 = "paidOver"
+	Paid        InvoiceState = "paid" // "amount paid is equal to or greater than the amount expected", but not confirmed yet
+	Confirmed   InvoiceState = "confirmed"
+	Complete    InvoiceState = "complete"
+	Expired     InvoiceState = "expired"
+	Invalid     InvoiceState = "invalid"
+	PaidPartial InvoiceState = "paidPartial"
+	PaidOver    InvoiceState = "paidOver"
 )
