@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"os"
 	"path"
@@ -15,41 +14,37 @@ import (
 )
 
 type Client struct {
-	API string // URI
-	ID  string // SIN
-	Key string
+	API string `json:"api"` // URI
+	Key string `json:"key"`
 }
 
-// MakeClient reads an API key from a file. If the file doesn't exist, a key is generated and written to it.
-func MakeClient(api string, keyPath string) (*Client, error) {
-
-	// check if key file exists
-
-	if _, err := os.Stat(keyPath); os.IsNotExist(err) {
-		var key = key_utils.GeneratePem()
-		if err := ioutil.WriteFile(keyPath, []byte(key), 0400); err != nil {
-			return nil, fmt.Errorf("creating keyfile %s: %w", keyPath, err)
-		}
-		log.Printf("created keyfile: %s", keyPath)
+// LoadClient reads an API key from a file. If the file doesn't exist, a key is generated and written to it.
+func LoadClient(jsonPath string) (*Client, error) {
+	var client = &Client{}
+	data, err := os.ReadFile(jsonPath)
+	switch {
+	case err == nil:
+		return client, json.Unmarshal(data, client)
+	case os.IsNotExist(err):
+		return nil, CreateClientConfig(jsonPath)
+	default:
+		return nil, err
 	}
+}
 
-	// read key file
-
-	b, err := ioutil.ReadFile(keyPath)
+// CreateClientConfig creates an empty json config file with empty values and chmod 600, so someone can fill in easily.
+// CreateClientConfig always returns an error.
+func CreateClientConfig(jsonPath string) error {
+	data, err := json.Marshal(&Client{
+		Key: key_utils.GeneratePem(),
+	})
 	if err != nil {
-		return nil, fmt.Errorf("reading keyfile %s: %w", keyPath, err)
+		return err
 	}
-	key := string(b)
-
-	// print SIN
-
-	log.Printf("please make sure that your BTCPay store is paired to the public key (hex SIN): %s", key_utils.ExtractCompressedPublicKey(key))
-
-	return &Client{
-		API: api,
-		ID:  key_utils.GenerateSinFromPem(key),
-		Key: key,
-	}, nil
+	if err := os.WriteFile(jsonPath, data, 0600); err != nil {
+		return err
+	}
+	return fmt.Errorf("created empty config file: %s", jsonPath)
 }
 
 func (client *Client) DoRequest(method string, path string, body io.Reader) (*http.Response, error) {
@@ -92,6 +87,12 @@ func (client *Client) GetInvoice(invID string) (*Invoice, error) {
 // InvoiceURL returns an absolute URL.
 func (client *Client) InvoiceURL(invoice *Invoice) string {
 	return path.Join(client.API, "i", invoice.ID) // don't use invoice.URL because that's for logged-in btcpay users only
+}
+
+// SINHex returns the hex representation of the public key.
+// Use this for pairing with BTCPay Server.
+func (client *Client) SINHex() string {
+	return key_utils.ExtractCompressedPublicKey(client.Key)
 }
 
 // required for json unmarshal because invoice is wrapped in a data field
