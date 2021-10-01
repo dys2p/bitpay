@@ -7,7 +7,6 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
-	"path"
 	"time"
 
 	"github.com/bitpay/bitpay-go/key_utils"
@@ -86,7 +85,7 @@ func (client *Client) GetInvoice(invID string) (*Invoice, error) {
 
 // InvoiceURL returns an absolute URL.
 func (client *Client) InvoiceURL(invoice *Invoice) string {
-	return path.Join(client.API, "i", invoice.ID) // don't use invoice.URL because that's for logged-in btcpay users only
+	return client.API + "/i/" + invoice.ID // don't use invoice.URL because that's for logged-in btcpay users only
 }
 
 // SINHex returns the hex representation of the public key.
