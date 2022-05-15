@@ -69,6 +69,7 @@ func (client *Client) GetInvoice(invID string) (*Invoice, error) {
 	if err != nil {
 		return nil, fmt.Errorf("getting invoice: %w", err)
 	}
+	defer resp.Body.Close()
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
